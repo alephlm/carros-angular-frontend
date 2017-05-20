@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="app">
+<head>
+	<meta charset="UTF-8">
+	<title>Carros</title>
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css"></script>
+	<link rel="stylesheet" href="https://unpkg.com/angular-toastr/dist/angular-toastr.css" />
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-select/0.20.0/select.min.css">
+
+</head>
+<body>
+	<div class="container" ng-controller="carrosController as vm" ng-cloak>
+		<div class="jumbotron">
+				<div class="row">
+					<div class="col-xs-11">
+						<input type="text" class="form-control" ng-model="vm.token" placeholder="Pipedrive tolken">
+					</div>
+						<a class="btn btn-primary" ng-click="vm.getPessoas(); vm.clearForm(); vm.isSaving = true">Novo</a>
+				</div>
+		</div>
+		<div class="col-xs-6" style="overflow-y: scroll; height: 282px;">
+			<table class="table table-hover">
+			<thead>
+		    <tr>
+		      <th>Modelo</th>
+		      <th style="width: 30px;"></th>
+		    </tr>
+		  </thead>
+				<tr ng-repeat="carro in vm.carros | orderBy:'-'">
+					<td ng-click="vm.getPessoas(); vm.loadCarro(carro); vm.isSaving = true">
+						{{carro.modelo}}
+					</td>
+					<td>
+						<a href="#" ng-click="vm.deleteCarro(carro)">Excluir</a>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<div class="col-xs-6">
+			<form name="vm.mainForm" novalidate ng-submit="vm.saveCarro(vm.carro)">
+			<fieldset ng-disabled="!vm.isSaving">
+				<div class="form-group" ng-class="{'has-error': vm.mainForm.pessoa.$invalid && vm.mainForm.$submitted && vm.mainForm.pessoa.$error }">
+			    <label for="pessoa">Responsável</label>
+					<ui-select ng-model="vm.carro.idPessoa">
+					    <ui-select-match>
+					        <span ng-bind="$select.selected.name"></span>
+					    </ui-select-match>
+					    <ui-select-choices repeat="person.id as person in vm.pessoas | filter: {name: $select.search}">
+					        <span ng-bind="person.name"></span>
+					    </ui-select-choices>
+					</ui-select>
+			    <div class="m-t-xs" ng-show="vm.mainForm.pessoa.$invalid && vm.mainForm.$submitted">
+						<small class="text-danger" ng-show="vm.mainForm.pessoa.$error.required">Campo obrigatório</small>
+					</div>
+				</div>
+			  <div class="form-group" ng-class="{'has-error': vm.mainForm.modelo.$invalid && vm.mainForm.$submitted && vm.mainForm.modelo.$error }">
+			    <label for="modelo">Modelo</label>
+			    <input name="modelo" type="text" class="form-control" ng-model="vm.carro.modelo" id="modelo" placeholder="Modelo" required>
+			    <div class="m-t-xs" ng-show="vm.mainForm.modelo.$invalid && vm.mainForm.$submitted">
+						<small class="text-danger" ng-show="vm.mainForm.modelo.$error.required">Campo obrigatório</small>
+					</div>
+			  </div>
+			  <div class="form-group" ng-class="{'has-error': vm.mainForm.cor.$invalid && vm.mainForm.$submitted && vm.mainForm.cor.$error }">
+					<label for="cor">Cor</label>
+					<select name="cor" class="form-control" ng-model="vm.carro.cor" required>
+					    <option value="" disabled selected>Selecione uma cor</option>
+					    <option value="PRETO">Preto</option>
+					    <option value="BRANCO">Branco</option>
+					    <option value="VERDE">Verde</option>
+					</select>
+					<div class="m-t-xs" ng-show="vm.mainForm.cor.$invalid && vm.mainForm.$submitted">
+						<small class="text-danger" ng-show="vm.mainForm.cor.$error.required">Campo obrigatório</small>
+					</div>
+				</div>
+				<div class="form-group" ng-class="{'has-error': vm.mainForm.ano.$invalid && vm.mainForm.$submitted && vm.mainForm.ano.$error }">
+					<label for="ano">Ano</label>
+						<input name="ano" type="number" placeholder="Ano" class="form-control" ng-model="vm.carro.ano" min="{{vm.mindate}}" max="{{vm.maxdate}}" step="1" required>
+					<div class="m-t-xs" ng-show="vm.mainForm.ano.$invalid && vm.mainForm.$submitted">
+						<small class="text-danger" ng-show="vm.mainForm.ano.$error.min">Ano deve ser maior que {{vm.mindate}}</small>
+						<small class="text-danger" ng-show="vm.mainForm.ano.$error.max">Ano deve ser menor que {{vm.maxdate}}</small>
+						<small class="text-danger" ng-show="vm.mainForm.ano.$error.required">Campo obrigatório</small>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-12 text-right">
+					  <button type="submit" class="btn btn-primary" ng-disabled="vm.mainForm.$invalid">
+					  	{{vm.carro.id ? "Atualizar" : "Inserir"}}
+					  </button>
+					</div>
+				</div>
+				</fieldset>
+		  </form>
+		</div>
+	</div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-sweetalert/1.1.2/SweetAlert.min.js"></script>
+<script src="https://unpkg.com/angular-toastr/dist/angular-toastr.tpls.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular-animate.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular-sanitize.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-select/0.20.0/select.min.js"></script>
+<script src="/app.js"></script>
+<script src="/factory.js"></script>
+<script src="/controller.js"></script>
+
+</body>
+</html>
